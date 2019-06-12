@@ -1,0 +1,22 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<BorlandProject>
+	<Transactions>
+    <Transaction>2014.10.27 14:35:14.896.cpp,C:\Documents and Settings\Администратор\Мои документы\RAD Studio\Projects\Unit1.cpp=C:\Documents and Settings\Администратор\Рабочий стол\Analiz_GOST\Unit1.cpp</Transaction>
+    <Transaction>2014.10.27 14:35:14.912.h,C:\Documents and Settings\Администратор\Мои документы\RAD Studio\Projects\Unit1.h=C:\Documents and Settings\Администратор\Рабочий стол\Analiz_GOST\Unit1.h</Transaction>
+    <Transaction>2014.10.27 14:35:14.912.dfm,C:\Documents and Settings\Администратор\Мои документы\RAD Studio\Projects\Unit1.dfm=C:\Documents and Settings\Администратор\Рабочий стол\Analiz_GOST\Unit1.dfm</Transaction>
+    <Transaction>2014.10.27 14:35:27.927.cbproj,C:\Documents and Settings\Администратор\Мои документы\RAD Studio\Projects\Project1.cbproj=C:\Documents and Settings\Администратор\Рабочий стол\Analiz_GOST\Analiz_GOST.cbproj</Transaction>
+    <Transaction>2014.10.27 14:35:36.412.cpp,C:\Documents and Settings\Администратор\Рабочий стол\Analiz_GOST\Unit1.cpp=</Transaction>
+    <Transaction>2014.10.27 14:35:36.412.dfm,C:\Documents and Settings\Администратор\Рабочий стол\Analiz_GOST\Unit1.dfm=</Transaction>
+    <Transaction>2014.10.27 14:36:44.943.cpp,C:\Documents and Settings\Администратор\Рабочий стол\Analiz_GOST\Unit1.cpp=C:\Documents and Settings\Администратор\Рабочий стол\Analiz_GOST\anliz.cpp</Transaction>
+    <Transaction>2014.10.27 14:36:44.943.h,C:\Documents and Settings\Администратор\Рабочий стол\Analiz_GOST\Unit1.h=C:\Documents and Settings\Администратор\Рабочий стол\Analiz_GOST\anliz.h</Transaction>
+    <Transaction>2014.10.27 14:36:44.943.dfm,C:\Documents and Settings\Администратор\Рабочий стол\Analiz_GOST\Unit1.dfm=C:\Documents and Settings\Администратор\Рабочий стол\Analiz_GOST\anliz.dfm</Transaction>
+    <Transaction>2014.10.27 15:00:19.755.cpp,C:\Documents and Settings\Администратор\Рабочий стол\Analiz_GOST\Unit2.cpp=C:\Documents and Settings\Администратор\Рабочий стол\Analiz_GOST\open_err.cpp</Transaction>
+    <Transaction>2014.10.27 15:00:19.755.h,C:\Documents and Settings\Администратор\Рабочий стол\Analiz_GOST\Unit2.h=C:\Documents and Settings\Администратор\Рабочий стол\Analiz_GOST\open_err.h</Transaction>
+    <Transaction>2014.10.27 15:00:19.755.dfm,C:\Documents and Settings\Администратор\Рабочий стол\Analiz_GOST\Unit2.dfm=C:\Documents and Settings\Администратор\Рабочий стол\Analiz_GOST\open_err.dfm</Transaction>
+    <Transaction>2014.10.27 15:59:18.271.cpp,C:\Documents and Settings\Администратор\Рабочий стол\Analiz_GOST\open_err.cpp=</Transaction>
+    <Transaction>2014.10.27 15:59:18.271.dfm,C:\Documents and Settings\Администратор\Рабочий стол\Analiz_GOST\open_err.dfm=</Transaction>
+    <Transaction>2014.10.27 16:25:55.615.cpp,C:\Documents and Settings\Администратор\Рабочий стол\Analiz_GOST\open_err.cpp=C:\Documents and Settings\Администратор\Рабочий стол\Analiz_GOST\start_work.cpp</Transaction>
+    <Transaction>2014.10.27 16:25:55.615.h,C:\Documents and Settings\Администратор\Рабочий стол\Analiz_GOST\open_err.h=C:\Documents and Settings\Администратор\Рабочий стол\Analiz_GOST\start_work.h</Transaction>
+    <Transaction>2014.10.27 16:25:55.615.dfm,C:\Documents and Settings\Администратор\Рабочий стол\Analiz_GOST\open_err.dfm=C:\Documents and Settings\Администратор\Рабочий стол\Analiz_GOST\start_work.dfm</Transaction>
+  </Transactions>
+</BorlandProject>

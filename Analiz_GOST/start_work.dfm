@@ -1,0 +1,39 @@
+object Form2: TForm2
+  Left = 0
+  Top = 0
+  Caption = 'Form2'
+  ClientHeight = 378
+  ClientWidth = 499
+  Color = clBtnFace
+  Font.Charset = DEFAULT_CHARSET
+  Font.Color = clWindowText
+  Font.Height = -11
+  Font.Name = 'Tahoma'
+  Font.Style = []
+  OldCreateOrder = False
+  PixelsPerInch = 96
+  TextHeight = 13
+  object RichEdit1: TRichEdit
+    Left = 21
+    Top = 16
+    Width = 452
+    Height = 307
+    Font.Charset = RUSSIAN_CHARSET
+    Font.Color = clWindowText
+    Font.Height = -11
+    Font.Name = 'Tahoma'
+    Font.Style = []
+    ParentFont = False
+    ScrollBars = ssVertical
+    TabOrder = 0
+  end
+  object Button1: TButton
+    Left = 398
+    Top = 345
+    Width = 75
+    Height = 25
+    Caption = 'OK'
+    TabOrder = 1
+    OnClick = Button1Click
+  end
+end

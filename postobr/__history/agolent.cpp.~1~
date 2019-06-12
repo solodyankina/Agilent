@@ -1,0 +1,65 @@
+//---------------------------------------------------------------------------
+
+#include <vcl.h>
+#pragma hdrstop
+
+#include "Unit1.h"
+#include "drv_ag.cpp"
+//---------------------------------------------------------------------------
+#pragma package(smart_init)
+#pragma link "Chart"
+#pragma link "Series"
+#pragma link "TeEngine"
+#pragma link "TeeProcs"
+#pragma resource "*.dfm"
+TForm1 *Form1;
+//---------------------------------------------------------------------------
+__fastcall TForm1::TForm1(TComponent* Owner)
+	: TForm(Owner)
+{
+}
+//---------------------------------------------------------------------------
+void __fastcall TForm1::Button1Click(TObject *Sender)
+{
+	double X,Y, xreference, xorigin, xincrement, yreference, yorigin, yincrement;
+    unsigned int size;
+	double *mydata = new double[size];
+	char* filename;
+	HANDLE binFile;
+	unsigned long n;
+	AnsiString str_date;
+	AnsiString str_time;
+
+	filename=EditFileName->Text;
+	MyCreateBin(filename,xreference,xorigin,xincrement,size,mydata) ;
+	ReadFile(binFile,str_date.c_str(),10,&n,NULL) ;
+	ReadFile(binFile,str_time.c_str(),8,&n,NULL) ;
+	LabelDate->Caption= str_date.c_str();
+	/*
+		Form1->Series1->Clear();
+	for (int i = 0; i < retCount/2; i++)
+	{
+		WORD w = buf2[i*2]*0x100 + buf2[i*2+1];
+		short dt = * ((short * )(&w));
+		if (dt> 0 )
+		{
+			Y = -(abs(dt - yreference)*yincrement)+yorigin;
+		}
+		else
+		{
+			Y = (abs(-dt - yreference)*yincrement)+yorigin;
+		}
+		X = ((i - xreference)*xincrement)+xorigin;
+		Form1->Series1->AddXY(X,Y,FloatToStr(X),clRed);
+	}
+	*/
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TForm1::SpeedButton1Click(TObject *Sender)
+{
+	OpenDialog1->Filter = "*.bin;*.b8;*.b16;*.b24;*.b32|*.bin;*.b8;*.b16;*.b24;*.b32";
+	OpenDialog1->Execute();
+	EditFileName->Text = OpenDialog1->FileName;
+}
+//---------------------------------------------------------------------------

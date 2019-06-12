@@ -1,0 +1,12 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<BorlandProject>
+	<Transactions>
+    <Transaction>2014.10.24 13:49:33.000.cpp,C:\Documents and Settings\Администратор\Мои документы\RAD Studio\Projects\Unit1.cpp=C:\Documents and Settings\Администратор\Рабочий стол\TestOscil_norm\test_oscil.cpp</Transaction>
+    <Transaction>2014.10.24 13:49:33.000.h,C:\Documents and Settings\Администратор\Мои документы\RAD Studio\Projects\Unit1.h=C:\Documents and Settings\Администратор\Рабочий стол\TestOscil_norm\test_oscil.h</Transaction>
+    <Transaction>2014.10.24 13:49:33.000.dfm,C:\Documents and Settings\Администратор\Мои документы\RAD Studio\Projects\Unit1.dfm=C:\Documents and Settings\Администратор\Рабочий стол\TestOscil_norm\test_oscil.dfm</Transaction>
+    <Transaction>2014.10.24 13:51:03.750.cbproj,C:\Documents and Settings\Администратор\Мои документы\RAD Studio\Projects\Project1.cbproj=C:\Documents and Settings\Администратор\Рабочий стол\TestOscil_norm\TestOscill_norm.cbproj</Transaction>
+    <Transaction>2014.11.11 12:55:03.775.cpp,C:\Documents and Settings\Администратор\Рабочий стол\TestOscil_norm\Unit2.cpp=C:\Documents and Settings\Администратор\Рабочий стол\TestOscil_norm\test_mask.cpp</Transaction>
+    <Transaction>2014.11.11 12:55:03.775.h,C:\Documents and Settings\Администратор\Рабочий стол\TestOscil_norm\Unit2.h=C:\Documents and Settings\Администратор\Рабочий стол\TestOscil_norm\test_mask.h</Transaction>
+    <Transaction>2014.11.11 12:55:03.775.dfm,C:\Documents and Settings\Администратор\Рабочий стол\TestOscil_norm\Unit2.dfm=C:\Documents and Settings\Администратор\Рабочий стол\TestOscil_norm\test_mask.dfm</Transaction>
+  </Transactions>
+</BorlandProject>

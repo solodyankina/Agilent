@@ -1,0 +1,1006 @@
+//---------------------------------------------------------------------------
+
+#include <vcl.h>
+#include <stdio.h>
+#include <math.h>
+#include <fstream>
+#pragma hdrstop
+
+#include <tchar.h>
+#include <stdio.h>
+#include <windows.h>
+#include "myvisa.h"
+#include "mytime.h"
+
+
+#include "test_oscil.h"
+//---------------------------------------------------------------------------
+#pragma package(smart_init)
+#pragma link "Chart"
+#pragma link "TeEngine"
+#pragma link "TeeProcs"
+#pragma link "Series"
+#pragma link "TeeFunci"
+#pragma resource "*.dfm"
+TForm1 *Form1;
+
+fviOpenDefaultRM viOpenDefaultRM;
+fviOpen viOpen;
+fviPrintf viPrintf;
+fviScanf viScanf;
+fviClose viClose;
+fviWrite viWrite;
+fviRead viRead;
+
+int myvisa_init(void) {
+	HINSTANCE visa32dll;
+
+	visa32dll = NULL;
+	visa32dll = LoadLibrary("visa32.dll");
+	if (visa32dll != NULL) {
+		if (!(viOpenDefaultRM = (fviOpenDefaultRM)GetProcAddress(visa32dll,
+					"viOpenDefaultRM")))
+			return 0;
+		if (!(viOpen = (fviOpen)GetProcAddress(visa32dll, "viOpen")))
+			return 0;
+		if (!(viPrintf = (fviPrintf)GetProcAddress(visa32dll, "viPrintf")))
+			return 0;
+		if (!(viScanf = (fviScanf)GetProcAddress(visa32dll, "viScanf")))
+			return 0;
+		if (!(viClose = (fviClose)GetProcAddress(visa32dll, "viClose")))
+			return 0;
+		if (!(viWrite = (fviWrite)GetProcAddress(visa32dll, "viWrite")))
+			return 0;
+		if (!(viRead = (fviRead)GetProcAddress(visa32dll, "viRead")))
+			return 0;
+	}
+	else
+		return 0; // false
+	return 1; // ok
+}
+
+//---------------------------------------------------------------------------
+__fastcall TForm1::TForm1(TComponent* Owner)
+	: TForm(Owner)
+{
+}
+//---------------------------------------------------------------------------
+
+void picture()
+{
+	unsigned int err;
+	ViRsrc name = "USB0::0x0957::0x17A4::MY53280597::0::INSTR";
+	ViSession defaultRM, vi;
+	char strres [20];
+	unsigned long actual;
+	char buf [256] = {0};
+	AnsiString str;
+	double xreference, xincrement, xorigin, yreference, yincrement, yorigin;
+	unsigned int points_count;
+	float X, Y;
+
+	err = viPrintf(vi, ":ACQuire:TYPE NORMal\n");
+	if(err != 0)
+	{
+		Form1->RichEdit1->Lines->Add("err :WAVeform:POINts");
+		return;
+	}
+
+	err = viPrintf(vi, ":WAVeform:POINts:MODE Normal\n");
+	if(err != 0)
+	{
+		Form1->RichEdit1->Lines->Add("err :WAVeform:POINts mode");
+		return;
+	}
+
+	err = viPrintf(vi, ":WAVeform:POINts 1000\n");
+	if(err != 0)
+	{
+		Form1->RichEdit1->Lines->Add("err :WAVeform:POINts");
+		return;
+	}
+	viPrintf(vi, ":WAVeform:POINts?\n");
+	viScanf (vi, "%t", &buf[0]);
+	str = buf;
+	str = "POINts " + str;
+	Form1->RichEdit1->Lines->Add(str);
+	Application->ProcessMessages();
+	//XREFerence
+	err = viPrintf(vi, ":WAVeform:XREFerence?\n");
+	if(err != 0)
+	{
+		Form1->RichEdit1->Lines->Add("Не удалось считать точки Xreference");
+		return;
+	}
+	viScanf (vi, "%t", &buf[0]);
+	str = buf;
+	xreference = atof(&buf[0]);
+	str = "xreference: " + str;
+	Form1->RichEdit1->Lines->Add(str);
+	Application->ProcessMessages();
+
+	// XORigin
+	err = viPrintf(vi, ":WAVeform:XORigin?\n");
+	if(err != 0)
+	{
+		Form1->RichEdit1->Lines->Add("Не удалось считать точки Xorogin");
+		return;
+	}
+	viScanf (vi, "%t", &buf[0]);
+	str = buf;
+	xorigin = atof(&buf[0]);
+	str = "xorigin: " + str;
+	Form1->RichEdit1->Lines->Add(str);
+	Application->ProcessMessages();
+	// XINCrement?
+	err = viPrintf(vi, ":WAVeform:XINCrement?\n");
+	if(err != 0)
+	{
+		Form1->RichEdit1->Lines->Add("Не удалось считать точки Xincrement");
+		return;
+	}
+	viScanf (vi, "%t", &buf[0]);
+	str = buf;
+	xincrement = atof(&buf[0]);
+	str = "xincrement: " + str;
+	Form1->RichEdit1->Lines->Add(str);
+	Application->ProcessMessages();
+	//YREFerence
+	err = viPrintf(vi, ":WAVeform:YREFerence?\n");  // Y
+	if(err != 0)
+	{
+		Form1->RichEdit1->Lines->Add("Не удалось считать точки Yrefenence");
+		return;
+	}
+	viScanf (vi, "%t", &buf[0]);
+	str = buf;
+	yreference = atof(&buf[0]);
+	str = "yreference: " + str;
+	Form1->RichEdit1->Lines->Add(str);
+	Application->ProcessMessages();
+	//YORigin
+	err = viPrintf(vi, ":WAVeform:YORigin?\n");  // Y
+	if(err != 0)
+	{
+		Form1->RichEdit1->Lines->Add("Не удалось считать точки Yorigin");
+		return;
+	}
+	viScanf (vi, "%t", &buf[0]);
+	str = buf;
+	yorigin = atof(&buf[0]);
+	str  = "yorigin : " + str ;
+	Form1->RichEdit1->Lines->Add(str );
+	Application->ProcessMessages();
+	//YINCrement
+	err = viPrintf(vi, ":WAVeform:YINCrement?\n");  // Y
+	if(err != 0)
+	{
+		Form1->RichEdit1->Lines->Add("Не удалось считать точки YINCrement");
+		return;
+	}
+	viScanf (vi, "%t", &buf[0]);
+	str = buf;
+	yincrement = atof(&buf[0]);
+	str  = "yincrement : " + str ;
+	Form1->RichEdit1->Lines->Add(str);
+	Application->ProcessMessages();
+
+
+	//Format
+	err = viPrintf(vi, ":WAVeform:FORMat WORD\n");
+	if(err != 0)
+	{
+		Form1->RichEdit1->Lines->Add("err :WAVeform:FORMat word");
+		return;
+	}
+	viPrintf(vi, ":WAVeform:FORMat?\n");
+	//BYTeorder
+	err = viPrintf(vi, ":WAVeform:BYTeorder MSBFirst\n");
+	if(err != 0)
+	{
+		Form1->RichEdit1->Lines->Add("err :WAVeform:BYTeorder");
+		return;
+	}
+	viPrintf(vi, ":WAVeform:BYTeorder?\n");
+	 //UNSigned
+	err = viPrintf(vi, ":WAVeform:UNSigned 1\n");
+	if(err != 0)
+	{
+		Form1->RichEdit1->Lines->Add("err :WAVeform:UNSigned ");
+		return;
+	}
+	viPrintf(vi, ":WAVeform:UNSigned?\n");
+
+	viPrintf(vi, ":WAVeform?\n");  // data
+	viScanf (vi, "%t", &buf[0]);
+	str = buf;
+	str = "nastr: " + str;
+	Form1->RichEdit1->Lines->Add(str);
+	Application->ProcessMessages();
+
+	//DATA
+	err = viPrintf(vi, ":WAVeform:DATA?\n");  // data
+	if(err != 0)
+	{
+		Form1->RichEdit1->Lines->Add("err :WAVeform:DATA?");
+		return;
+	}
+	unsigned long retCount = 0;
+	memset(buf,0,10);
+	viRead(vi, (unsigned char *)( &buf[0]), 2, &retCount);
+	memset(buf,0,10);
+	viRead(vi, (unsigned char *)( &buf[0]), 8, &retCount);
+	points_count = atoi(&buf[0]);
+	char *buf2;
+	buf2 = new char [points_count];
+	memset(buf2,0,points_count);
+	viRead(vi, (unsigned char *)( &buf2[0]), points_count, &retCount);
+	Form1->Series1->Clear();
+	for (int i = 0; i < retCount/2; i++)
+	{
+		WORD w = buf2[i*2]*0x100 + buf2[i*2+1];
+		short dt = * ((short * )(&w));
+		if (dt> 0 )
+		{
+			Y = -(abs(dt - yreference)*yincrement)+yorigin;
+		}
+		else
+		{
+			Y = (abs(-dt - yreference)*yincrement)+yorigin;
+		}
+		X = ((i - xreference)*xincrement)+xorigin;
+		Form1->Series1->AddXY(X,Y,FloatToStr(X),clRed);
+	}
+	memset(buf,0,10);
+	viRead(vi, (unsigned char *)( &buf[0]), 10, &retCount);
+}
+
+
+void __fastcall TForm1::Button1Click(TObject *Sender)
+{
+//  что происходит по клику кнопки
+	unsigned int err;
+	ViRsrc name = "USB0::0x0957::0x17A4::MY53280597::0::INSTR";
+	ViSession defaultRM, vi;
+	char strres [20];
+	unsigned long actual;
+	char buf [256] = {0};
+	AnsiString str;
+	double xreference, xincrement, xorigin, yreference, yincrement, yorigin;
+	unsigned int points_count;
+	float X, Y;
+
+
+	myvisa_init();
+
+	// Open session to USB device at address
+	err = viOpenDefaultRM(&defaultRM);
+	if (err != 0)
+	{
+		RichEdit1->Lines->Add("Ощибка вызова функции viOpenDefaultRM. Не удалась открыть ссесию");
+		return ;
+	}
+	else
+	RichEdit1->Lines->Add("Ссесия успешно открыта");
+	Application->ProcessMessages();
+
+	err = viOpen(defaultRM, "USB0::0x0957::0x17A4::MY53280597::0::INSTR", VI_NULL, VI_NULL, &vi);
+	if (err!=0)
+	{
+		RichEdit1->Lines->Add("Ощибка вызова функции viOpen. Не удалась установить связь с устройством. Проверти подключение");
+		return ;
+	}
+	else
+	RichEdit1->Lines->Add("Связь с USB успешно установленна");
+	Application->ProcessMessages();
+
+	//запрашиваем канал
+	err = viPrintf(vi, ":STATUS? CHANEL1\n");
+	if (err!=0)
+	{
+		RichEdit1->Lines->Add("Не удалась установить связь с выбранным каналом. Проверти подключение");
+		return ;
+	}
+	else
+	RichEdit1->Lines->Add("Связь с каналом установленна");
+	Application->ProcessMessages();
+
+	//выбор канала
+	err = viPrintf(vi, ":VIEW CHANnel1\n");
+	if (err != 0)
+	{
+		RichEdit1->Lines->Add("Не удалась подключиться к выранному каналу. Проверти подключение");
+		return ;
+	}
+	else
+	RichEdit1->Lines->Add("Подключение к каналу установленно");
+	Application->ProcessMessages();
+
+	// выбирает режим развертки
+	err = viPrintf(vi, ":TRIGger:SWEep NORMal\n");
+	if (err != 0)
+	{
+		RichEdit1->Lines->Add("Не удалась запустить нормальный режим развертки");
+		return ;
+	}
+	else
+	RichEdit1->Lines->Add("Выбран нормальный режим развертки");
+	Application->ProcessMessages();
+
+	// режим запуска
+/*	str = ":SBUS1:M1553:TRIGger:TYPE " + ComboBox1->Text + "\n";
+	err = viPrintf(vi, str.c_str());
+	if (err != 0)
+	{
+		RichEdit1->Lines->Add("Не удалось считать :SBUS<n>:M1553:TRIGger:TYPE");
+		return;
+	}
+	viPrintf(vi, ":SBUS<n>:M1553:TRIGger:TYPE?\n");
+	viScanf (vi, "%t", &buf[0]);
+	str = buf;
+	str = "Режим запуска: " + str;
+	RichEdit1->Lines->Add(str);
+	Application->ProcessMessages();    */
+
+	// Устанавливаем измерения
+	err = viPrintf(vi, ":MEASure:SOURce CHANnel1\n");
+	if (err != 0)
+	{
+		RichEdit1->Lines->Add("Не удалась подключиться к выранному каналу. Проверти подключение");
+		return ;
+	}
+
+	// Амплитуда
+	err = viPrintf(vi, ":MEASure:VAMPlitude[1]\n");
+	if(err != 0)
+	{
+		RichEdit1->Lines->Add("Не удалось считать амплитуду");
+		return;
+	}
+	viPrintf(vi, ":MEASure:VAMPlitude?\n");
+	// Read results
+	viScanf (vi, "%t", &buf[0]);
+	// Print results
+		/*DWORDLONG ct[201];
+		ct[0] = myGetMKSTicks();
+		for(int k=1; k<201; ++k)
+			ct[k] = 0;
+		for(int k=1; k<201; k++)
+		{
+			viPrintf(vi, ":MEASure:RESults?\n" );
+			viScanf (vi, "%t", &buf[0]) ;
+			ct[k] =  myGetMKSTicks();
+		}
+		AnsiString amp;
+		for (int k=1; k<201; ++k)
+		{
+		   amp = (IntToStr(int(ct[k] - ct[k-1]))) ;
+		   Edit5->Text = amp;
+		   Application->ProcessMessages();
+		} */
+	str = buf;
+	Edit1->Text = str;
+	Application->ProcessMessages();
+
+	// Длительность спада фронта
+	err = viPrintf(vi, ":MEASure:FALLtime[1]\n");
+	if (err != 0)
+	{
+		RichEdit1->Lines->Add("Не удалось считать спад фронта");
+		return;
+	}
+	viPrintf(vi, ":MEASure:FALLtime?\n");
+	viScanf (vi, "%t", &buf[0]);
+	str = buf;
+	Edit4->Text = str;
+	Application->ProcessMessages();
+	// Длительность нарастания фронта
+	err = viPrintf(vi, ":MEASure:RISetime[1]\n");
+	if (err != 0)
+	{
+		RichEdit1->Lines->Add("Не удалось считать нарастание фронта");
+		return ;
+	}
+	viPrintf(vi, ":MEASure:RISetime?\n");
+	viScanf (vi, "%t", &buf[0]);
+	str = buf;
+	Edit3->Text = str;
+	Application->ProcessMessages();
+
+	// Отклонение
+	err = viPrintf(vi, ":MEASure:OVERshoot[CHANnel1]\n");
+	if (err != 0)
+	{
+		RichEdit1->Lines->Add("Не удалось считать отклонение");
+		return ;
+	}
+	viPrintf(vi, ":MEASure:OVERshoot?\n");
+	viScanf (vi, "%t", &buf[0]);
+	str = buf;
+	Edit2->Text = str;
+	Application->ProcessMessages();
+
+  /*	err = viPrintf(vi, ":MEASure:RESults?\n");
+	if (err != 0)
+	{
+		RichEdit1->Lines->Add("err :MEASure:RESults");
+		return ;
+	}
+	viScanf (vi, "%t", &buf[0]);
+	str = buf;
+	str = "res: " + str;
+	RichEdit1->Lines->Add(str);
+	Application->ProcessMessages();
+	err = viPrintf(vi, ":MEASure:STATistics 1\n");
+	if (err != 0)
+	{
+		RichEdit1->Lines->Add("Не удалось выдать статистику");
+		return ;
+	}
+	viPrintf(vi, ":MEASure:STATistics?\n");
+	viScanf (vi, "%t", &buf[0]);
+	str = buf;
+	str = "stat: " + str;
+	RichEdit1->Lines->Add(str);
+	Application->ProcessMessages();     */
+
+   	// Вертикальная настройка
+	err = viPrintf(vi, ":CHANnel1:SCALe 5[V]\n");
+	if(err != 0)
+	{
+		RichEdit1->Lines->Add("err :CHANnel1:SCALe");
+		return;
+	}
+	viPrintf(vi, ":CHANnel1:SCALe?\n");
+	err = viPrintf(vi, ":CHANnel1:OFFSet 0\n");
+	if(err != 0)
+	{
+		RichEdit1->Lines->Add("err :CHANnel1:OFFSet");
+		return;
+	}
+	viPrintf(vi, ":CHANnel1:OFFSet?\n");
+	//Горизонтальная настройка
+	err = viPrintf(vi, ":TIMebase:SCALe 0.000002\n");
+	if(err != 0)
+	{
+		RichEdit1->Lines->Add("err :TIMebase:SCALe");
+		return;
+	}
+	viPrintf(vi, ":TIMebase:SCALe?\n");
+	str = ":TIMebase:POSition 0.00\n";
+	err = viPrintf(vi, str.c_str());
+	if(err != 0)
+	{
+		RichEdit1->Lines->Add("err :TIMebase:POSition?");
+		return;
+	}
+	viPrintf(vi, ":TIMebase:POSition?\n");
+
+	picture();
+
+ /*	// Сброс статистики
+	err = viPrintf(vi, ":MEASure:STATistics:RESet\n");
+	if (err != 0)
+	{
+		RichEdit1->Lines->Add("Не удалось сбросить статистику");
+		return ;
+	}
+	// выберем типы результата статистики
+	AnsiString ResultsTypeArray[7];
+	ResultsTypeArray[0] = "CURRent";
+	ResultsTypeArray[1] = "MINimum";
+	ResultsTypeArray[2] = "MAXimum";
+	ResultsTypeArray[3] = "MEAN";
+	ResultsTypeArray[4] = "STDDev";
+	ResultsTypeArray[5] = "COUNt";
+	ResultsTypeArray[6] = "ON"; // All results.
+
+	AnsiString ValueColumnArray[7];
+	ValueColumnArray[0] = "Meas_Lbl";
+	ValueColumnArray[1] = "Current";
+	ValueColumnArray[2] = "Min";
+	ValueColumnArray[3] = "Max";
+	ValueColumnArray[4] = "Mean";
+	ValueColumnArray[5] = "Std_Dev";
+	ValueColumnArray[6] = "Count";
+
+
+	for (int i=6; i<7; i++)
+	{
+		str=":MEASure:STATistics " + ResultsTypeArray[i]+"\n";
+		err = viPrintf(vi, str.c_str());
+		// Получаем результаты статистики
+		int intCounter;
+		intCounter = 0;
+		memset(&buf[0],0,256);
+
+		DWORDLONG ct[201];
+		ct[0] = myGetMKSTicks();
+		for(int k=1; k<201; ++k)
+        	ct[k] = 0;
+		for(int k=1; k<201; k++)
+		{
+			viPrintf(vi, ":MEASure:RESults?\n" );
+			viScanf (vi, "%t", &buf[0]) ;
+			ct[k] =  myGetMKSTicks();
+		}
+		for (int k=1; k<201; ++k)
+		{
+
+		   RichEdit1->Lines->Add(IntToStr(int(ct[k] - ct[k-1])));
+		   Application->ProcessMessages();
+		}
+
+
+
+		str = buf;
+		str = ResultsTypeArray[i]+": " + str;
+		RichEdit1->Lines->Add(str);
+		Application->ProcessMessages();
+
+*/
+	   /*
+		//For Measurement In MeasurementArray
+			if (CheckBox1->Checked)
+			{
+				for (int i=0; i<7; i++)
+				{
+					//if (intCounter <> vbString)
+					{
+						err = viPrintf(vi, ":MEASure:RESults?\n" );
+						memset(&buf[0],0,256);
+						viScanf (vi, "%t", &buf[0]) ;
+						str = buf;
+						str = ResultsTypeArray[i]+": " + str;
+						RichEdit1->Lines->Add(str);
+						Application->ProcessMessages();
+					}
+					else // Result is a string (e.g., measurement label).
+					{
+						err=viPrintf(vi, ":MEASure:RESults?\n" );
+						//RichEdit1->Lines->Add(intCounter);
+					}
+				}
+			}
+			else //Specific statistic (e.g., Current, Max, Min, etc.).
+			{
+				err = viPrintf(vi, ":MEASure:RESults?\n" );
+				memset(&buf[0],0,256);
+				viScanf (vi, "%t", &buf[0]) ;
+				str = buf;
+				str = ResultsTypeArray[i]+": " + str;
+				RichEdit1->Lines->Add(str);
+				Application->ProcessMessages();
+			}
+
+
+	}
+	*/
+	// Close session
+	viClose (vi);
+	viClose (defaultRM);
+}
+//---------------------------------------------------------------------------
+
+AnsiString MyFloatToStr(double i)
+{
+	AnsiString str = FloatToStr(i);
+	//меняем запятую на точку
+	int k = str.Pos(",");
+	if (k>0)
+		str[k] = '.';
+	return str;
+}
+
+void __fastcall TForm1::Button2Click(TObject *Sender)
+{
+	//  что происходит по клику кнопки
+	unsigned int err;
+	ViRsrc name = "USB0::0x0957::0x17A4::MY53280597::0::INSTR";
+	ViSession defaultRM, vi;
+	char strres [20];
+	unsigned long actual;
+	char buf [256] = {0};
+	AnsiString str;
+	double xreference, xincrement, xorigin, yreference, yincrement, yorigin;
+	unsigned int points_count;
+	float X, Y;
+
+	myvisa_init();
+
+	// Open session to USB device at address
+	viOpenDefaultRM(&defaultRM);
+	viOpen(defaultRM, "USB0::0x0957::0x17A4::MY53280597::0::INSTR", VI_NULL, VI_NULL, &vi);
+	//запрашиваем канал
+	viPrintf(vi, ":STATUS? CHANEL1\n");
+	//выбор канала
+	viPrintf(vi, ":VIEW CHANnel1\n");
+
+	//Горизонтальная настройка
+	for (float i = 0; i < 0.0000192; i = i + 0.0000001)
+	{
+	   str = MyFloatToStr(i);
+	   str = ":TIMebase:POSition " + FloatToStr(i) + "\n";
+	   int k = str.Pos(",");
+	   if (k>0)
+	   str[k] = '.';
+	   //return str;
+	   err = viPrintf(vi, str.c_str());
+	   if(err != 0)
+	   {
+			RichEdit1->Lines->Add("err :TIMebase:POSition?");
+			return;
+	   }
+	   viPrintf(vi, ":TIMebase:POSition?\n");
+	}
+
+	picture();
+
+	viClose (vi);
+	viClose (defaultRM);
+
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TForm1::Button3Click(TObject *Sender)
+{
+//  что происходит по клику кнопки
+	unsigned int err;
+	ViRsrc name = "USB0::0x0957::0x17A4::MY53280597::0::INSTR";
+	ViSession defaultRM, vi;
+	char strres [20];
+	unsigned long actual;
+	char buf [256] = {0};
+	AnsiString str;
+	double xreference, xincrement, xorigin, yreference, yincrement, yorigin;
+	unsigned int points_count;
+	float X, Y;
+
+	myvisa_init();
+
+	// Open session to USB device at address
+	viOpenDefaultRM(&defaultRM);
+	viOpen(defaultRM, "USB0::0x0957::0x17A4::MY53280597::0::INSTR", VI_NULL, VI_NULL, &vi);
+	//запрашиваем канал
+	viPrintf(vi, ":STATUS? CHANEL1\n");
+	//выбор канала
+	viPrintf(vi, ":VIEW CHANnel1\n");
+
+	//Горизонтальная настройка
+	for (float i = 0.0000192; i < 0.00003; i = i + 0.0000001)
+	{
+	   str = MyFloatToStr(i);
+	   str = ":TIMebase:POSition " + FloatToStr(i) + "\n";
+	   int k = str.Pos(",");
+	   if (k>0)
+	   str[k] = '.';
+	   //return str;
+	   err = viPrintf(vi, str.c_str());
+	   if(err != 0)
+	   {
+			RichEdit1->Lines->Add("err :TIMebase:POSition?");
+			return;
+	   }
+	   viPrintf(vi, ":TIMebase:POSition?\n");
+	}
+
+	picture();
+
+	viClose (vi);
+	viClose (defaultRM);
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TForm1::Button4Click(TObject *Sender)
+{
+	unsigned int err;
+	ViRsrc name = "USB0::0x0957::0x17A4::MY53280597::0::INSTR";
+	ViSession defaultRM, vi;
+	char buf [256] = {0};
+	AnsiString str;
+
+	myvisa_init();
+
+	// Open session to USB device at address
+	viOpenDefaultRM(&defaultRM);
+	viOpen(defaultRM, "USB0::0x0957::0x17A4::MY53280597::0::INSTR", VI_NULL, VI_NULL, &vi);
+	//запрашиваем канал
+	viPrintf(vi, ":STATUS? CHANEL1\n");
+	//выбор канала
+	viPrintf(vi, ":VIEW CHANnel1\n");
+
+	// подключиться к каналу
+	err = viPrintf(vi, ":MTESt:AMASk:SOURce CHANnel1\n");
+	if(err != 0)
+	{
+		RichEdit2->Lines->Add("Не удалось подключиться к каналу CHANnel1");
+		return;
+	}
+
+	// X
+	err = viPrintf(vi, ":MTESt:AMASk:XDELta 0.05\n");
+	if(err != 0)
+	{
+		RichEdit2->Lines->Add("Не удалось считать точки Xorogin");
+		return;
+	}
+	viPrintf(vi, ":MTESt:AMASk:XDELta?\n");
+	viScanf (vi, "%t", &buf[0]);
+	str = buf;
+
+	// Y
+	err = viPrintf(vi, ":MTESt:AMASk:YDELta 0.05\n");
+	if(err != 0)
+	{
+		RichEdit2->Lines->Add("Не удалось считать точки Xorogin");
+		return;
+	}
+	viPrintf(vi, ":MTESt:AMASk:YDELta?\n");
+	viScanf (vi, "%t", &buf[0]);
+	str = buf;
+
+	// create mask
+	err = viPrintf(vi, ":MTESt:AMASk:CREate\n");
+	if(err != 0)
+	{
+		RichEdit2->Lines->Add("Не удалось считать точки Xorogin");
+		return;
+	}
+
+	viClose (vi);
+	viClose (defaultRM);
+}
+
+//---------------------------------------------------------------------------
+
+
+void __fastcall TForm1::Button5Click(TObject *Sender)
+{
+	unsigned int err;
+	ViRsrc name = "USB0::0x0957::0x17A4::MY53280597::0::INSTR";
+	ViSession defaultRM, vi;
+	char buf [256] = {0};
+	AnsiString str;
+
+	myvisa_init();
+
+	// Open session to USB device at address
+	viOpenDefaultRM(&defaultRM);
+	viOpen(defaultRM, "USB0::0x0957::0x17A4::MY53280597::0::INSTR", VI_NULL, VI_NULL, &vi);
+	//запрашиваем канал
+	viPrintf(vi, ":STATUS? CHANEL1\n");
+	//выбор канала
+	viPrintf(vi, ":VIEW CHANnel1\n");
+
+	err = viPrintf(vi, ":MTESt:DELete\n");
+	if(err != 0)
+	{
+		RichEdit2->Lines->Add("err fail_wave");
+		return;
+	}
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TForm1::Button8Click(TObject *Sender)
+{
+	unsigned int err;
+	ViRsrc name = "USB0::0x0957::0x17A4::MY53280597::0::INSTR";
+	ViSession defaultRM, vi;
+	char buf [256] = {0};
+	AnsiString str;
+	double amplitude,fulltime,restime,overshoot,failwaveform,count_test, timemask,datas,times;
+	ofstream f;
+	double xreference, xincrement, xorigin, yreference, yincrement, yorigin;
+	unsigned int points_count;
+	float X, Y;
+
+	myvisa_init();
+
+	// Open session to USB device at address
+	viOpenDefaultRM(&defaultRM);
+	viOpen(defaultRM, "USB0::0x0957::0x17A4::MY53280597::0::INSTR", VI_NULL, VI_NULL, &vi);
+	//запрашиваем канал
+	viPrintf(vi, ":STATUS? CHANEL1\n");
+	//выбор канала
+	viPrintf(vi, ":VIEW CHANnel1\n");
+	RichEdit2->Lines->Add("Связь успешно установленна");
+
+	// остановки при ошибке
+	err = viPrintf(vi, ":MTESt:RMODe:FACTion:STOP 1\n");
+	if(err != 0)
+	{
+		RichEdit2->Lines->Add("FACTion:STOP");
+		return;
+	}
+
+	for (int i = 0; i < 10000; i++)
+	{
+
+	// если  STOP
+	err = viPrintf(vi, ":OPERegister:CONDition?\n");
+	if(err != 0)
+	{
+		RichEdit2->Lines->Add("Не удалось подключиться к каналу CHANnel1");
+		return;
+	}
+	viScanf (vi, "%t", &buf[0]);
+	str = buf;
+	if (str == "+544\n")
+	{
+		memset(buf,0,0);
+		// дата
+		err = viPrintf(vi, ":SYSTem:DATE?\n");
+		memset(buf,0,0);
+		if(err != 0)
+		{
+			RichEdit2->Lines->Add(":SYSTem:DATE?");
+			return;
+		}
+		viScanf (vi, "%t", &buf[0]);
+		str = buf;
+		datas = atof(&buf[0]);
+		// time
+		err = viPrintf(vi, ":SYSTem:TIME? hours,minutes,seconds\n");
+		memset(buf,0,0);
+		if(err != 0)
+		{
+			RichEdit2->Lines->Add("err hours,minutes,seconds");
+			return;
+		}
+		viScanf (vi, "%t", &buf[0]);
+		str = buf;
+		times = atof(&buf[0]);
+
+		// количество fail waveform
+		err = viPrintf(vi, ":MTESt:COUNt:FWAVeforms? [CHANnel1]\n");
+		memset(buf,0,0);
+		if(err != 0)
+		{
+			RichEdit2->Lines->Add("err fail_wave");
+			return;
+		}
+		viScanf (vi, "%t", &buf[0]);
+		str = buf;
+		failwaveform = atof(&buf[0]);
+		// общее количесво измерений
+		err = viPrintf(vi, ":MTESt:COUNt:WAVeforms?\n");
+		if(err != 0)
+		{
+			RichEdit2->Lines->Add("err COUNt:WAVeforms?");
+			return;
+		}
+		viScanf (vi, "%t", &buf[0]);
+		str = buf;
+		count_test = atof(&buf[0]);
+		// время на испытание маски
+		err = viPrintf(vi, ":MTESt:COUNt:TIME?\n");
+		if(err != 0)
+		{
+			RichEdit2->Lines->Add("err COUNt:time?");
+			return;
+		}
+		viScanf (vi, "%t", &buf[0]);
+		str = buf;
+		timemask = atof(&buf[0]);
+
+		// Амплитуда
+		err = viPrintf(vi, ":MEASure:VAMPlitude[1]\n");
+		if(err != 0)
+		{
+			RichEdit1->Lines->Add("Не удалось считать амплитуду");
+			return;
+		}
+		viPrintf(vi, ":MEASure:VAMPlitude?\n");
+		// Read results
+		viScanf (vi, "%t", &buf[0]);
+		str = buf;
+		amplitude = atof(&buf[0]);
+		// Длительность спада фронта
+		err = viPrintf(vi, ":MEASure:FALLtime[1]\n");
+		if (err != 0)
+		{
+			RichEdit1->Lines->Add("Не удалось считать спад фронта");
+			return;
+		}
+		viPrintf(vi, ":MEASure:FALLtime?\n");
+		viScanf (vi, "%t", &buf[0]);
+		str = buf;
+		fulltime = atof(&buf[0]);
+		// Длительность нарастания фронта
+		err = viPrintf(vi, ":MEASure:RISetime[1]\n");
+		if (err != 0)
+		{
+			RichEdit1->Lines->Add("Не удалось считать нарастание фронта");
+			return ;
+		}
+		viPrintf(vi, ":MEASure:RISetime?\n");
+		viScanf (vi, "%t", &buf[0]);
+		str = buf;
+		restime = atof(&buf[0]);
+		// Отклонение
+		err = viPrintf(vi, ":MEASure:OVERshoot[CHANnel1]\n");
+		if (err != 0)
+		{
+			RichEdit1->Lines->Add("Не удалось считать отклонение");
+			return ;
+		}
+		viPrintf(vi, ":MEASure:OVERshoot?\n");
+		viScanf (vi, "%t", &buf[0]);
+		str = buf;
+		overshoot = atof(&buf[0]);
+
+ //----------------------------------------------------------------------------------
+        picture();
+ //----------------------------------------------------------------------------------
+
+		//RichEdit2->Lines->SaveToFile("C:\\Documents and Settings\\Администратор\\Рабочий стол\\TestOscil_norm\\err_wav.doc");
+		Chart1->SaveToBitmapFile("C:\\Documents and Settings\\Администратор\\Рабочий стол\\TestOscil_norm\\report\\err_wav.bmp");
+		SaveDialog1->Title = "save data";
+		SaveDialog1->FileName = "err_data.html";
+		if (SaveDialog1->Execute())
+		{
+			RichEdit1->Lines->SaveToFile(SaveDialog1->FileName);
+		}
+		str = "C:\\Workhard\\delphi_homework\\err_wav.files\\err_data.html";
+		f.open(str.c_str());
+		f<<"<head>"<<"\n"<<"<meta http-equiv=Content-Type content="<<"text/html; charset=windows-1251"<<"></head>";
+		f<<"<p>"<<datas<<"</p>";
+		f<<"<p>"<<times<<"</p>";
+		f<<"<p>"<<"Общее количество измерений  "<<count_test<<"</p>";
+		f<<"<Body>"<<"\n"<<"<p>"<<"Количество сбоев "<<failwaveform<<"</p>";
+		f<<"<p>"<<"Затраченно времени "<<timemask<<"</p>";
+		f<<"<p>"<<"Амплитуда "<<amplitude<<"</p>";
+		f<<"<p>"<<"Отклонение "<<overshoot<<"</p>";
+		f<<"<p>"<<"Нарастание фронта "<<restime<<"</p>";
+		f<<"<p>"<<"Спад фронта "<<fulltime<<"</p>";
+		f<<"<p align=center><img src="<<"err_wav.bmp" <<"></p>"<<"\n"<<"</body></html>";
+		f.close();
+		ShellExecute(0, "open", "C:\\Workhard\\delphi_homework\\err_wav.files\\err_data.html", NULL, NULL, SW_RESTORE);
+
+		viClose (vi);
+		viClose (defaultRM);
+	}
+	}
+	viClose (vi);
+	viClose (defaultRM);
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TForm1::Button6Click(TObject *Sender)
+{
+      	unsigned int err;
+	ViRsrc name = "USB0::0x0957::0x17A4::MY53280597::0::INSTR";
+	ViSession defaultRM, vi;
+	char buf [256] = {0};
+	AnsiString str;
+
+
+	myvisa_init();
+
+	// Open session to USB device at address
+	viOpenDefaultRM(&defaultRM);
+	viOpen(defaultRM, "USB0::0x0957::0x17A4::MY53280597::0::INSTR", VI_NULL, VI_NULL, &vi);
+	//запрашиваем канал
+	viPrintf(vi, ":STATUS? CHANEL1\n");
+	//выбор канала
+	viPrintf(vi, ":VIEW CHANnel1\n");
+	RichEdit2->Lines->Add("Связь успешно установленна");
+
+	err = viPrintf(vi, ":TRIGger:MODE EDGE\n");
+	if(err != 0)
+	{
+		RichEdit1->Lines->Add("err :TRIGger:MODE");
+		return;
+	}
+	viPrintf(vi, ":TRIGger:MODE?\n");
+	viScanf (vi, "%t", &buf[0]);
+	str = buf;
+	str = ":TRIGger:MODE: " + str;
+	RichEdit1->Lines->Add(str);
+	Application->ProcessMessages();
+
+	viClose (vi);
+	viClose (defaultRM);
+}
+//---------------------------------------------------------------------------
+

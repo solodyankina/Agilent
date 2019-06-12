@@ -1,0 +1,10 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<BorlandProject>
+	<Transactions>
+    <Transaction>2014.11.19 15:11:52.686.cpp,C:\Users\Otd332-1\Documents\RAD Studio\Projects\File1.cpp=C:\Workhard\dll\drv_ag.cpp</Transaction>
+    <Transaction>2014.11.19 15:12:27.006.cbproj,C:\Users\Otd332-1\Documents\RAD Studio\Projects\Project2.cbproj=C:\Workhard\dll\drv_agilent3000.cbproj</Transaction>
+    <Transaction>2014.11.21 09:41:51.954.pas,C:\Workhard\dll\Unit1.pas=C:\Workhard\dll\agilent_const.pas</Transaction>
+    <Transaction>2014.11.24 13:30:05.148.h,C:\Workhard\dll\agilent_const.h=</Transaction>
+    <Transaction>2014.11.24 13:46:13.965.h,C:\Workhard\dll\myvisa.h=</Transaction>
+  </Transactions>
+</BorlandProject>
